@@ -194,7 +194,10 @@
         // flag). See services/token_meter.py for measured session token usage
         // and cache-hit ratios.
         "enabled": true,
-        "context_budget_tokens": 80000,
+        // Local fix (2026-11-23): 80000 assumed a big cloud context; with local Ollama
+        // (num_ctx 24576) the transcript kept growing to 24600 tokens -> Ollama 400
+        // "exceeds the available context size" -> llm_gave_up after ~16 retries.
+        "context_budget_tokens": 16000,
         // Below start_ratio of the operator's own measured prompt size, closed
         // segments only prepare their summary; the original turns are kept in
         // context and replaced once occupancy reaches this ratio. Measurements
