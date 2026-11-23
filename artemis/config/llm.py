@@ -58,16 +58,20 @@ __all__ = [
 
 
 def lightweight_judge_default() -> "LLMWithFallback":
-    """Factory default for the lightweight judge nodes (pixel safety net and
-    planner validation): a flash-lite model at temperature 0."""
+    """Local default for the lightweight judge nodes (pixel safety net and
+    planner validation): local Ollama qwen, thinking disabled, temperature 0."""
     return LLMWithFallback(
-        provider="google",
-        model="gemini-3.5-flash-lite",
+        provider="ollama",
+        model="local-vlm",
         temperature=0.0,
+        api_base="http://127.0.0.1:11434/v1",
+        reasoning_effort="none",
         fallback=LLM(
-            provider="google",
-            model="gemini-3.1-flash-lite",
+            provider="ollama",
+            model="local-vlm",
             temperature=0.0,
+            api_base="http://127.0.0.1:11434/v1",
+            reasoning_effort="none",
         ),
     )
 

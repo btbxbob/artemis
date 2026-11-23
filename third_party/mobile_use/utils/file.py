@@ -22,9 +22,47 @@ from typing import IO
 
 
 def strip_json_comments(text: str) -> str:
-    text = re.sub(r"//.*?$", "", text, flags=re.MULTILINE)
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
-    return text
+    """Strip // and /* */ comments, but never inside a JSON string literal.
+
+    Local fix: upstream used a regex that also ate "//" inside values such as
+    http URLs, leaving unparseable JSON.
+    """
+    out = []
+    i = 0
+    n = len(text)
+    in_str = False
+    DQ = chr(34)
+    BS = chr(92)
+    while i < n:
+        ch = text[i]
+        if in_str:
+            out.append(ch)
+            if ch == BS and i + 1 < n:
+                out.append(text[i + 1])
+                i += 2
+                continue
+            if ch == DQ:
+                in_str = False
+            i += 1
+            continue
+        if ch == DQ:
+            in_str = True
+            out.append(ch)
+            i += 1
+            continue
+        if ch == "/" and i + 1 < n and text[i + 1] == "/":
+            while i < n and text[i] != chr(10):
+                i += 1
+            continue
+        if ch == "/" and i + 1 < n and text[i + 1] == "*":
+            i += 2
+            while i + 1 < n and not (text[i] == "*" and text[i + 1] == "/"):
+                i += 1
+            i += 2
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
 
 
 def load_jsonc(file: IO) -> dict:

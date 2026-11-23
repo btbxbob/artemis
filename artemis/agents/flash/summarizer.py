@@ -164,12 +164,15 @@ class VisualStepSummarizer(StepMemoryService):
         # Initialize lightweight VLM: prioritize explicit model_name
         target_model = model_name or "gemini-2.5-flash-lite"
         self._model_name = target_model
+        # Local fix: always prefer the configured `summarizer` node. Previously an
+        # explicit model_name (agent.step_summarizer.model, default a Gemini id)
+        # forced a Google client, so a fully local/DeepSeek config still needed
+        # a GOOGLE_API_KEY and crashed at startup.
         try:
-            if model_name:
-                self._llm = get_google_llm(model_name=target_model, temperature=0.0)
-            else:
-                self._llm = get_llm(ctx, name="summarizer", is_utils=True)
+            self._llm = get_llm(ctx, name="summarizer")
         except Exception:
+            if not model_name:
+                raise
             self._llm = get_google_llm(model_name=target_model, temperature=0.0)
         try:
             configured = getattr(self._llm, "model", None) or getattr(self._llm, "model_name", None)

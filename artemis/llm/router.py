@@ -222,6 +222,12 @@ class ModelFactory:
         provider = ModelProvider.from_string(endpoint.provider)
 
         if provider == ModelProvider.GOOGLE:
+            import traceback as _tb
+
+            logger.error(
+                "GOOGLE model requested: %s\n%s"
+                % (endpoint.model_name, "".join(_tb.format_stack()[-14:]))
+            )
             _patch_langchain_google_genai()
             from langchain_google_genai import (
                 ChatGoogleGenerativeAI,

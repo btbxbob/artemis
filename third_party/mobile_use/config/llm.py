@@ -63,6 +63,13 @@ class LLM(BaseModel):
     reasoning_effort: Literal["none", "low", "medium", "high"] | None = None
     include_thoughts: bool | None = None
     enable_grounding: bool | None = None
+    # Local fix: per-node endpoint overrides were silently dropped at parse time,
+    # so a "custom"/"ollama" node always fell back to OPENAI_BASE_URL and could not
+    # point at a different box (e.g. local Ollama for vision, DeepSeek for planning).
+    api_base: str | None = None
+    api_key: str | None = None
+
+    model_config = {"ignored_types": (CyFunctionDetector,), "extra": "ignore"}
 
     def validate_provider(self, name: str) -> None:
         """Ensure the required API key or credentials exist in settings for this provider."""
